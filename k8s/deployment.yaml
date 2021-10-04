@@ -1,0 +1,68 @@
+# Deploy do node
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: node
+spec:
+  selector:
+    matchLabels:
+      app: node
+  template:
+   metadata:
+    labels:
+     app: node
+   spec:
+    containers:
+     - name: node
+       image: node:14.17.5
+       #       ports:
+       #- containerPort: 8080
+---
+# Service do MongoDB
+apiVersion: v1
+kind: Service
+metadata:
+        name: node
+spec:
+  selector:
+          app: node
+  ports:
+    - port: 80
+  type: ClusterIP
+
+---
+#Deploy aplicacao web
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+ name: web
+spec:
+ replicas: 1
+ selector:
+  matchLabels:
+   app: web
+ template:
+   metadata:
+    labels:
+     app: web
+   spec:
+     containers:
+       - name: web
+         image: guilhermehsti/conversao-temperatura:v1
+         ports:
+           - containerPort: 80
+---
+#Serviço para expor a aplicacao
+apiVersion: v1
+kind: Service
+metadata:
+ name: web
+spec:
+ selector:
+  app: web
+ ports:
+  - port: 80
+    targetPort: 8080
+    nodePort: 30000
+ type: NodePort
